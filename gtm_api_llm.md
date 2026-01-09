@@ -1,8 +1,3 @@
-Certo 🙂
-Qui sotto trovi **l’intero documento riformattato e ripulito in Markdown**, mantenendo tutti i contenuti originali ma con struttura, titoli, elenchi e leggibilità migliorati.
-
----
-
 # GTM API – Document for LLMs
 
 ## Introduction
@@ -313,5 +308,3 @@ This document provides a structured overview of:
 * REST resources (v1 & v2)
 
 It is intended as a **reference for LLMs and developers** building automated or advanced integrations with Google Tag Manager.
-
-🏴
