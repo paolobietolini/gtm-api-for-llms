@@ -27,12 +27,12 @@ Want Claude to help you with GTM API operations? Install the skill and Claude wi
 ```bash
 # Option 1: Clone and copy
 git clone https://github.com/paolobietolini/gtm-api-for-llms.git
-cp -r gtm-api-for-llms/skill ~/.claude/skills/gtm-api
+cp -r gtm-api-for-llms/skills ~/.claude/skills/gtm-api
 
 # Option 2: One-liner (download and install)
 curl -sL https://github.com/paolobietolini/gtm-api-for-llms/archive/main.tar.gz | tar xz && \
   mkdir -p ~/.claude/skills && \
-  cp -r gtm-api-for-llms-main/skill ~/.claude/skills/gtm-api && \
+  cp -r gtm-api-for-llms-main/skills ~/.claude/skills/gtm-api && \
   rm -rf gtm-api-for-llms-main
 ```
 
