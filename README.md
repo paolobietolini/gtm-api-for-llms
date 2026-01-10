@@ -266,7 +266,7 @@ Information in this repository is synthesized from:
 
 ## Maintenance
 
-This repository reflects the GTM API as of **January 2025**.
+This repository reflects the GTM API as of **January 2026**.
 
 Google may update the API without notice. For the most current specification:
 - Check the official [Tag Manager API docs](https://developers.google.com/tag-platform/tag-manager/api/v2)
