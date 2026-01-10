@@ -18,31 +18,47 @@ The goal of this project is to provide a clean, normalized, and comprehensive de
 
 ---
 
-## For Humans: Install the Claude Code Skill
+## For Humans: Install the AI Coding Agent Skill
 
-Want Claude to help you with GTM API operations? Install the skill and Claude will automatically know how to create tags, triggers, variables, publish versions, and more.
+Want your AI assistant to help with GTM API operations? Install the skill and it will automatically know how to create tags, triggers, variables, publish versions, and more.
 
-### Installation
+**Works with:** Claude Code, OpenAI Codex, and other compatible agents.
+
+### Claude Code Installation
 
 ```bash
 # Option 1: Clone and copy
 git clone https://github.com/paolobietolini/gtm-api-for-llms.git
-cp -r gtm-api-for-llms/skills ~/.claude/skills/gtm-api
+cp -r gtm-api-for-llms/skills/gtm-api ~/.claude/skills/
 
-# Option 2: One-liner (download and install)
+# Option 2: One-liner
 curl -sL https://github.com/paolobietolini/gtm-api-for-llms/archive/main.tar.gz | tar xz && \
   mkdir -p ~/.claude/skills && \
-  cp -r gtm-api-for-llms-main/skills ~/.claude/skills/gtm-api && \
+  cp -r gtm-api-for-llms-main/skills/gtm-api ~/.claude/skills/ && \
   rm -rf gtm-api-for-llms-main
 ```
 
-### Verify Installation
+Verify: Ask Claude *"What skills are available?"* — you should see `gtm-api`.
 
-Ask Claude: *"What skills are available?"* — you should see `gtm-api` in the list.
+### OpenAI Codex Installation
+
+```bash
+# Option 1: Clone and copy
+git clone https://github.com/paolobietolini/gtm-api-for-llms.git
+cp -r gtm-api-for-llms/skills/gtm-api ~/.codex/skills/
+
+# Option 2: One-liner
+curl -sL https://github.com/paolobietolini/gtm-api-for-llms/archive/main.tar.gz | tar xz && \
+  mkdir -p ~/.codex/skills && \
+  cp -r gtm-api-for-llms-main/skills/gtm-api ~/.codex/skills/ && \
+  rm -rf gtm-api-for-llms-main
+```
+
+Verify: Run `/skills` in Codex — you should see `gtm-api`.
 
 ### Usage
 
-Once installed, Claude automatically uses the skill when you ask about GTM API operations:
+Once installed, the skill activates automatically when you ask about GTM API operations:
 
 - *"Create a GA4 pageview tag in my GTM container"*
 - *"Help me publish changes to my GTM container"*
