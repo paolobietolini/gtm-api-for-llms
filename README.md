@@ -18,6 +18,41 @@ The goal of this project is to provide a clean, normalized, and comprehensive de
 
 ---
 
+## For Humans: Install the Claude Code Skill
+
+Want Claude to help you with GTM API operations? Install the skill and Claude will automatically know how to create tags, triggers, variables, publish versions, and more.
+
+### Installation
+
+```bash
+# Option 1: Clone and copy
+git clone https://github.com/paolobietolini/gtm-api-for-llms.git
+cp -r gtm-api-for-llms/skill ~/.claude/skills/gtm-api
+
+# Option 2: One-liner (download and install)
+curl -sL https://github.com/paolobietolini/gtm-api-for-llms/archive/main.tar.gz | tar xz && \
+  mkdir -p ~/.claude/skills && \
+  cp -r gtm-api-for-llms-main/skill ~/.claude/skills/gtm-api && \
+  rm -rf gtm-api-for-llms-main
+```
+
+### Verify Installation
+
+Ask Claude: *"What skills are available?"* — you should see `gtm-api` in the list.
+
+### Usage
+
+Once installed, Claude automatically uses the skill when you ask about GTM API operations:
+
+- *"Create a GA4 pageview tag in my GTM container"*
+- *"Help me publish changes to my GTM container"*
+- *"What's the correct format for a custom event trigger?"*
+- *"Update tag X to fire on a different trigger"*
+
+No special syntax needed — just describe what you want to do with GTM.
+
+---
+
 ## Documentation Structure
 
 ### For LLMs (Primary Audience)
