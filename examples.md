@@ -578,6 +578,262 @@ POST https://tagmanager.googleapis.com/tagmanager/v2/accounts/12345/containers/6
 
 ---
 
+## Example 9: GA4 Ecommerce Tags (IMPORTANT)
+
+The GTM API uses an unintuitive parameter structure for GA4 tags. This section documents the **correct** format.
+
+### Common Mistakes to Avoid
+
+| ❌ Wrong | ✅ Correct |
+|----------|-----------|
+| Using `measurementId` directly | Use empty `measurementId` + `measurementIdOverride` |
+| `"key": "transaction_id"` | Use `"key": "name", "value": "transaction_id"` in map |
+| Missing ecommerce flags | Need `sendEcommerceData` + `getEcommerceDataFrom` |
+
+### GA4 Event Tag (Simple)
+
+**Request:**
+```http
+POST https://tagmanager.googleapis.com/tagmanager/v2/accounts/12345/containers/67890/workspaces/10/tags
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "name": "GA4 - Button Click",
+  "type": "gaawe",
+  "firingTriggerId": ["5"],
+  "parameter": [
+    {
+      "type": "tagReference",
+      "key": "measurementId",
+      "value": ""
+    },
+    {
+      "type": "template",
+      "key": "measurementIdOverride",
+      "value": "G-XXXXXXXXXX"
+    },
+    {
+      "type": "template",
+      "key": "eventName",
+      "value": "button_click"
+    }
+  ]
+}
+```
+
+### GA4 Event Tag with Custom Parameters
+
+**Request:**
+```http
+POST https://tagmanager.googleapis.com/tagmanager/v2/accounts/12345/containers/67890/workspaces/10/tags
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "name": "GA4 - Custom Event with Params",
+  "type": "gaawe",
+  "firingTriggerId": ["5"],
+  "parameter": [
+    {
+      "type": "tagReference",
+      "key": "measurementId",
+      "value": ""
+    },
+    {
+      "type": "template",
+      "key": "measurementIdOverride",
+      "value": "{{GA4 Measurement ID}}"
+    },
+    {
+      "type": "template",
+      "key": "eventName",
+      "value": "custom_event"
+    },
+    {
+      "type": "list",
+      "key": "eventParameters",
+      "list": [
+        {
+          "type": "map",
+          "map": [
+            {
+              "type": "template",
+              "key": "name",
+              "value": "button_id"
+            },
+            {
+              "type": "template",
+              "key": "value",
+              "value": "{{Click ID}}"
+            }
+          ]
+        },
+        {
+          "type": "map",
+          "map": [
+            {
+              "type": "template",
+              "key": "name",
+              "value": "button_text"
+            },
+            {
+              "type": "template",
+              "key": "value",
+              "value": "{{Click Text}}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+### GA4 Ecommerce Purchase Tag
+
+**Request:**
+```http
+POST https://tagmanager.googleapis.com/tagmanager/v2/accounts/12345/containers/67890/workspaces/10/tags
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "name": "GA4 - Ecommerce Purchase",
+  "type": "gaawe",
+  "firingTriggerId": ["19"],
+  "parameter": [
+    {
+      "type": "tagReference",
+      "key": "measurementId",
+      "value": ""
+    },
+    {
+      "type": "template",
+      "key": "measurementIdOverride",
+      "value": "{{GA4 Measurement ID}}"
+    },
+    {
+      "type": "template",
+      "key": "eventName",
+      "value": "purchase"
+    },
+    {
+      "type": "boolean",
+      "key": "sendEcommerceData",
+      "value": "true"
+    },
+    {
+      "type": "template",
+      "key": "getEcommerceDataFrom",
+      "value": "dataLayer"
+    },
+    {
+      "type": "list",
+      "key": "eventParameters",
+      "list": [
+        {
+          "type": "map",
+          "map": [
+            {
+              "type": "template",
+              "key": "name",
+              "value": "transaction_id"
+            },
+            {
+              "type": "template",
+              "key": "value",
+              "value": "{{DL - Transaction ID}}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Key points for ecommerce:**
+- `sendEcommerceData` must be `"true"` (as string in boolean type)
+- `getEcommerceDataFrom` should be `"dataLayer"` to read items from dataLayer
+- The items array is read automatically from the dataLayer ecommerce object
+- Additional parameters like `transaction_id` go in `eventParameters`
+
+### GA4 Add to Cart Tag
+
+**Request:**
+```http
+POST https://tagmanager.googleapis.com/tagmanager/v2/accounts/12345/containers/67890/workspaces/10/tags
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "name": "GA4 - Add to Cart",
+  "type": "gaawe",
+  "firingTriggerId": ["20"],
+  "parameter": [
+    {
+      "type": "tagReference",
+      "key": "measurementId",
+      "value": ""
+    },
+    {
+      "type": "template",
+      "key": "measurementIdOverride",
+      "value": "{{GA4 Measurement ID}}"
+    },
+    {
+      "type": "template",
+      "key": "eventName",
+      "value": "add_to_cart"
+    },
+    {
+      "type": "boolean",
+      "key": "sendEcommerceData",
+      "value": "true"
+    },
+    {
+      "type": "template",
+      "key": "getEcommerceDataFrom",
+      "value": "dataLayer"
+    }
+  ]
+}
+```
+
+### Custom Event Trigger for Ecommerce
+
+**Request:**
+```http
+POST https://tagmanager.googleapis.com/tagmanager/v2/accounts/12345/containers/67890/workspaces/10/triggers
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "name": "Ecommerce - Purchase Event",
+  "type": "customEvent",
+  "customEventFilter": [
+    {
+      "type": "equals",
+      "parameter": [
+        {
+          "type": "template",
+          "key": "arg0",
+          "value": "{{_event}}"
+        },
+        {
+          "type": "template",
+          "key": "arg1",
+          "value": "purchase"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
 ## Tips for LLMs
 
 1. **Always get fingerprints** before updating entities
