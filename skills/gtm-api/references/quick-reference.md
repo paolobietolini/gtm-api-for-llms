@@ -141,6 +141,11 @@ Scopes are **additive**. You need multiple scopes for complex operations:
 | `javascriptError` | JavaScript Error | JS error occurs |
 | `triggerGroup` | Trigger Group | Combination of triggers |
 
+**Note on Trigger Groups**: Creating trigger groups requires a specific `parameter` structure. See [schemas.md](schemas.md#trigger-groups-type-triggergroup) for the correct format:
+```json
+{"parameter": [{"key": "triggerIds", "type": "list", "list": [{"type": "triggerReference", "value": "<triggerId>"}]}]}
+```
+
 ### Server Container Triggers
 
 | Type Code | Display Name | When It Fires |

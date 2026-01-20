@@ -360,6 +360,67 @@ The `type` field is a **string** with no predefined enum in the API specificatio
 | `less` | Value less than |
 | `css` | CSS selector matches |
 
+### Trigger Groups (type: `triggerGroup`)
+
+Trigger groups combine multiple triggers using logical AND/OR operations. The member triggers are specified using the `parameter` field with a specific structure.
+
+**Important**: The parameter structure for trigger groups is non-obvious. You must use the exact format below.
+
+#### Parameter Structure for Trigger Groups
+
+```json
+{
+  "name": "My Trigger Group",
+  "type": "triggerGroup",
+  "parameter": [
+    {
+      "key": "triggerIds",
+      "type": "list",
+      "list": [
+        {"type": "triggerReference", "value": "14"},
+        {"type": "triggerReference", "value": "15"}
+      ]
+    }
+  ]
+}
+```
+
+#### Key Points
+
+1. **`parameter`** must contain an array with a single object
+2. **`key`** must be exactly `"triggerIds"` (case-sensitive)
+3. **`type`** must be `"list"` at the outer level
+4. **`list`** contains the member triggers
+5. Each member trigger uses:
+   - `"type": "triggerReference"` (not `template` or `tagReference`)
+   - `"value": "<triggerId>"` - the trigger ID as a string
+
+#### Example: Creating a Trigger Group via API
+
+```json
+{
+  "name": "Pageview AND Click Group",
+  "type": "triggerGroup",
+  "parameter": [
+    {
+      "key": "triggerIds",
+      "type": "list",
+      "list": [
+        {"type": "triggerReference", "value": "123"},
+        {"type": "triggerReference", "value": "456"}
+      ]
+    }
+  ]
+}
+```
+
+#### Common Mistakes
+
+- **Wrong key**: Using `"triggers"` instead of `"triggerIds"`
+- **Wrong list item type**: Using `"template"` or `"tagReference"` instead of `"triggerReference"`
+- **Wrong nesting**: Putting triggers directly in `parameter` instead of inside `list`
+- **Using `key` in list items**: List items should only have `type` and `value`
+
 ---
 
 ## Variables
