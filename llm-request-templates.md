@@ -300,15 +300,30 @@ No variables to replace - this is complete.
 {
   "name": "Custom Event - Purchase",
   "type": "customEvent",
-  "eventName": {
-    "type": "template",
-    "value": "purchase"
-  }
+  "customEventFilter": [
+    {
+      "type": "equals",
+      "parameter": [
+        {
+          "type": "template",
+          "key": "arg0",
+          "value": "{{_event}}"
+        },
+        {
+          "type": "template",
+          "key": "arg1",
+          "value": "purchase"
+        }
+      ]
+    }
+  ]
 }
 ```
 
 **Variables to replace:**
-- `purchase`: Your custom event name
+- `purchase`: Your custom event name (the dataLayer event name to match)
+
+**Note:** Use `customEventFilter` (not `eventName`) for customEvent triggers. The `{{_event}}` variable references the dataLayer event name.
 
 ---
 
