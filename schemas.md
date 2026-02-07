@@ -690,12 +690,37 @@ Server-side container clients that receive and process incoming requests.
 }
 ```
 
+### Client Type Field
+
+The `type` field is a **template-based string**, not a fixed enum. It references the template used by the client. Types are determined by the client template installed in the container.
+
 ### Common Client Types
 
 | Type | Description |
 |------|-------------|
 | `gaaw` | GA4 Web Client |
+| `gaaw_client` | GA4 Client (observed in server-side containers) |
 | `sp` | Google Ads Client |
+
+### Fields
+
+| Field | Type | Create | Update | Description |
+|-------|------|--------|--------|-------------|
+| `path` | `string` | Output only | Output only | Client API path. |
+| `clientId` | `string` | Output only | Output only | Unique client identifier. |
+| `accountId` | `string` | Output only | Output only | Parent account ID. |
+| `containerId` | `string` | Output only | Output only | Parent container ID. |
+| `workspaceId` | `string` | Output only | Output only | Parent workspace ID. |
+| `name` | `string` | Required | Required | Client display name. |
+| `type` | `string` | Required | Required | Client template type string. |
+| `notes` | `string` | Optional | Optional | User notes. |
+| `parameter` | `Parameter[]` | Optional | Optional | Client configuration parameters. |
+| `fingerprint` | `string` | Output only | Required (query param) | Computed fingerprint. Required on update to prevent conflicts. |
+| `parentFolderId` | `string` | Optional | Optional | Containing folder ID. |
+| `priority` | `integer` | Optional | Optional | Controls client execution order. Lower values execute first. |
+| `tagManagerUrl` | `string` | Output only | Output only | Link to client in UI. |
+
+**Note on `priority`**: The `priority` field is an integer that controls the order in which clients are evaluated for incoming requests. Clients with lower priority values are evaluated first. This is important when multiple clients could claim the same request.
 
 ---
 
@@ -749,6 +774,45 @@ Server-side transformations that modify event data.
   "parentFolderId": string,
   "tagManagerUrl": string
 }
+```
+
+### Transformation Types
+
+The `type` field must be one of these values (undocumented in official Google API docs, discovered through testing):
+
+| Type | Description | Table Key | Column Names |
+|------|-------------|-----------|-------------|
+| `tf_allow_params` | Allow only specified parameters to pass through | `allowedParamsTable` | `allowedParams` |
+| `tf_exclude_params` | Exclude specified parameters from passing through | `excludedParamsTable` | `excludedParams` |
+| `tf_augment_event` | Add or modify event parameters | `augmentEventTable` | `paramName`, `paramValue` |
+
+### Transformation Parameter Structure
+
+All transformation types share these common parameters:
+
+| Parameter Key | Type | Description |
+|---------------|------|-------------|
+| `matchingConditionsEnabled` | boolean | Whether conditions must match for transformation to apply |
+| `allTagsExcept` | boolean | If true, apply to all tags except listed ones |
+| `affectedTags` | list | Specific tags to target (list of maps with `tagReference`) |
+| `affectedTagTypes` | list | Tag types to target (list of maps with `tagType` + `tagTypeExceptions`) |
+| `matchingConditionsTable` | list | Conditions that must match (list of maps with `variableName`, `variableReference`, `expressionType`, `expressionValue`) |
+
+Each type has its own table parameter for the actual data:
+
+**tf_allow_params:**
+```json
+{"key": "allowedParamsTable", "type": "list", "list": [{"type": "map", "map": [{"key": "allowedParams", "type": "template", "value": "event_name"}]}]}
+```
+
+**tf_exclude_params:**
+```json
+{"key": "excludedParamsTable", "type": "list", "list": [{"type": "map", "map": [{"key": "excludedParams", "type": "template", "value": "x-fb-ck-fbp"}]}]}
+```
+
+**tf_augment_event:**
+```json
+{"key": "augmentEventTable", "type": "list", "list": [{"type": "map", "map": [{"key": "paramName", "type": "template", "value": "custom_param"}, {"key": "paramValue", "type": "template", "value": "custom_value"}]}]}
 ```
 
 ---
@@ -881,3 +945,6 @@ Parameters are used throughout tags, triggers, variables, and other entities.
 8. **Zone restrictions** only work in web containers
 9. **Template data** uses GTM's sandboxed JavaScript dialect
 10. **Parameters can be nested** - lists can contain maps, maps can contain lists
+11. **Transformation types are undocumented** — Google's API docs don't list valid transformation types. The three known types are: `tf_allow_params`, `tf_exclude_params`, `tf_augment_event`
+12. **Google API returns 500 for unknown transformation types** — Unlike most validation errors (400), passing an invalid transformation type returns HTTP 500
+13. **List operations may return nil for incompatible container types** — Listing clients or transformations on a web container may return a nil/empty response rather than an error

@@ -930,6 +930,183 @@ Send to appropriate endpoint with proper auth.
 
 ---
 
+## Built-in Variable Templates
+
+### Enable Built-in Variables
+
+```http
+POST https://tagmanager.googleapis.com/tagmanager/v2/accounts/123/containers/456/workspaces/10/built_in_variables?type=pageUrl&type=pagePath&type=referrer
+Authorization: Bearer {access_token}
+```
+
+**Note:** Types are URL query parameters, not body fields. No request body needed.
+
+**Common web types:** `pageUrl`, `pageHostname`, `pagePath`, `referrer`, `clickElement`, `clickClasses`, `clickId`, `clickUrl`, `clickText`, `formElement`, `formId`, `randomNumber`, `containerId`
+
+**Common server types:** `eventName`, `clientName`, `requestPath`, `requestMethod`, `requestHost`, `ipAddress`, `userAgent`
+
+---
+
+### Disable Built-in Variables
+
+```http
+DELETE https://tagmanager.googleapis.com/tagmanager/v2/accounts/123/containers/456/workspaces/10/built_in_variables?type=pageUrl
+Authorization: Bearer {access_token}
+```
+
+---
+
+## Client Templates (Server-Side Only)
+
+### Create GA4 Client
+
+```json
+{
+  "name": "GA4 Client",
+  "type": "gaaw_client",
+  "priority": 10,
+  "parameter": [],
+  "notes": "Receives GA4 measurement protocol requests"
+}
+```
+
+**Variables to replace:**
+- Client name
+- Priority (integer, controls execution order)
+
+---
+
+### Update Client
+
+```http
+PUT https://tagmanager.googleapis.com/tagmanager/v2/accounts/123/containers/456/workspaces/10/clients/5
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "name": "GA4 Client - Updated",
+  "type": "gaaw_client",
+  "priority": 10,
+  "fingerprint": "current_fingerprint"
+}
+```
+
+**Note:** Include fingerprint from GET response. Include ALL fields, not just changed ones.
+
+---
+
+## Transformation Templates (Server-Side Only)
+
+### Exclude Parameters Transformation
+
+```json
+{
+  "name": "Exclude Facebook Cookies",
+  "type": "tf_exclude_params",
+  "parameter": [
+    {
+      "key": "excludedParamsTable",
+      "type": "list",
+      "list": [
+        {
+          "type": "map",
+          "map": [
+            {"key": "excludedParams", "type": "template", "value": "x-fb-ck-fbp"}
+          ]
+        },
+        {
+          "type": "map",
+          "map": [
+            {"key": "excludedParams", "type": "template", "value": "x-fb-ck-fbc"}
+          ]
+        }
+      ]
+    },
+    {"key": "matchingConditionsEnabled", "type": "boolean", "value": "false"},
+    {"key": "allTagsExcept", "type": "boolean", "value": "false"},
+    {"key": "affectedTags", "type": "list"},
+    {"key": "affectedTagTypes", "type": "list"}
+  ]
+}
+```
+
+**Variables to replace:**
+- Transformation name
+- Parameter values in `excludedParams`
+
+---
+
+### Allow Parameters Transformation
+
+```json
+{
+  "name": "Allow Only Core Params",
+  "type": "tf_allow_params",
+  "parameter": [
+    {
+      "key": "allowedParamsTable",
+      "type": "list",
+      "list": [
+        {
+          "type": "map",
+          "map": [
+            {"key": "allowedParams", "type": "template", "value": "event_name"}
+          ]
+        },
+        {
+          "type": "map",
+          "map": [
+            {"key": "allowedParams", "type": "template", "value": "page_location"}
+          ]
+        }
+      ]
+    },
+    {"key": "matchingConditionsEnabled", "type": "boolean", "value": "false"},
+    {"key": "allTagsExcept", "type": "boolean", "value": "false"},
+    {"key": "affectedTags", "type": "list"},
+    {"key": "affectedTagTypes", "type": "list"}
+  ]
+}
+```
+
+---
+
+### Augment Event Transformation
+
+```json
+{
+  "name": "Add Custom Parameters",
+  "type": "tf_augment_event",
+  "parameter": [
+    {
+      "key": "augmentEventTable",
+      "type": "list",
+      "list": [
+        {
+          "type": "map",
+          "map": [
+            {"key": "paramName", "type": "template", "value": "custom_param"},
+            {"key": "paramValue", "type": "template", "value": "custom_value"}
+          ]
+        }
+      ]
+    },
+    {"key": "matchingConditionsEnabled", "type": "boolean", "value": "false"},
+    {"key": "allTagsExcept", "type": "boolean", "value": "false"},
+    {"key": "affectedTags", "type": "list"},
+    {"key": "affectedTagTypes", "type": "list"}
+  ]
+}
+```
+
+**Key points for transformations:**
+- `type` is required and must be one of: `tf_allow_params`, `tf_exclude_params`, `tf_augment_event`
+- Each type uses a different table key and column names (see table above)
+- Common parameters (`matchingConditionsEnabled`, `allTagsExcept`, etc.) are shared by all types
+- Google API returns HTTP 500 (not 400) for invalid transformation types
+
+---
+
 ## Common Mistakes to Avoid
 
 ```

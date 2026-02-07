@@ -148,6 +148,101 @@ MUST NOT INCLUDE:
   ✗ fingerprint
 ```
 
+### Create Client (Server-Side)
+
+```
+REQUIRED:
+  ✓ name (string, non-empty)
+  ✓ type (string, valid client type)
+
+OPTIONAL:
+  - parameter (array of Parameter objects)
+  - priority (integer, controls execution order)
+  - notes (string)
+  - parentFolderId (string)
+
+MUST NOT INCLUDE:
+  ✗ clientId (auto-generated)
+  ✗ path (auto-generated)
+  ✗ fingerprint (only for updates)
+  ✗ accountId (derived from URL)
+  ✗ containerId (derived from URL)
+  ✗ workspaceId (derived from URL)
+
+CONTAINER REQUIREMENT:
+  Container must be server-side (usageContext: "server")
+```
+
+### Update Client
+
+```
+REQUIRED:
+  ✓ ALL fields from current client (GET first)
+  ✓ fingerprint (from current client)
+  ✓ name
+  ✓ type
+
+OPTIONAL:
+  - Same as Create Client
+
+PROCESS:
+  1. GET current client to get fingerprint
+  2. Merge changes with current client
+  3. Include updated fingerprint in PUT body
+```
+
+### Create Transformation (Server-Side)
+
+```
+REQUIRED:
+  ✓ name (string, non-empty)
+  ✓ type (string, must be one of: "tf_allow_params", "tf_exclude_params", "tf_augment_event")
+
+OPTIONAL:
+  - parameter (array of Parameter objects, type-specific)
+  - notes (string)
+  - parentFolderId (string)
+
+TYPE-SPECIFIC PARAMETERS:
+  IF type == "tf_allow_params":
+    parameter table key: "allowedParamsTable"
+    column name: "allowedParams"
+
+  IF type == "tf_exclude_params":
+    parameter table key: "excludedParamsTable"
+    column name: "excludedParams"
+
+  IF type == "tf_augment_event":
+    parameter table key: "augmentEventTable"
+    column names: "paramName" and "paramValue"
+
+MUST NOT INCLUDE:
+  ✗ transformationId (auto-generated)
+  ✗ path (auto-generated)
+  ✗ fingerprint (only for updates)
+
+CONTAINER REQUIREMENT:
+  Container must be server-side (usageContext: "server")
+
+KNOWN ISSUE:
+  Google API returns HTTP 500 (not 400) for invalid transformation types
+```
+
+### Update Transformation
+
+```
+REQUIRED:
+  ✓ ALL fields from current transformation (GET first)
+  ✓ fingerprint (from current transformation)
+  ✓ name
+  ✓ type (must be valid: tf_allow_params, tf_exclude_params, tf_augment_event)
+
+PROCESS:
+  1. GET current transformation to get fingerprint
+  2. Merge changes with current transformation
+  3. Include updated fingerprint in PUT body
+```
+
 ### Create Version
 
 ```
@@ -719,4 +814,19 @@ PUBLISH VERSION:
   ☐ Version was created from workspace
   ☐ Version ID is valid
   ☐ Have tagmanager.publish scope
+
+CREATE CLIENT:
+  ☐ name is non-empty string
+  ☐ type is valid client type string
+  ☐ Container is server-side
+  ☐ No fingerprint included
+  ☐ No auto-generated fields included
+
+CREATE TRANSFORMATION:
+  ☐ name is non-empty string
+  ☐ type is one of: tf_allow_params, tf_exclude_params, tf_augment_event
+  ☐ Parameter table key matches type (allowedParamsTable/excludedParamsTable/augmentEventTable)
+  ☐ Column names match type (allowedParams/excludedParams/paramName+paramValue)
+  ☐ Container is server-side
+  ☐ No fingerprint included
 ```

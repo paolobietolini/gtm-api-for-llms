@@ -168,8 +168,12 @@ No special syntax needed — just describe what you want to do with GTM.
 | **List resources** | [llm-instructions.md](llm-instructions.md) → "List All Resources" | [llm-workflows.md](llm-workflows.md) → Pagination |
 | **Build parameters** | [llm-request-templates.md](llm-request-templates.md) | [llm-validation-rules.md](llm-validation-rules.md) → Parameters |
 | **Validate request** | [llm-validation-rules.md](llm-validation-rules.md) | [schemas.md](schemas.md) |
+| **Create client** | [llm-instructions.md](llm-instructions.md) → "Create a Client" | [llm-request-templates.md](llm-request-templates.md) → Client Templates |
+| **Create transformation** | [llm-instructions.md](llm-instructions.md) → "Create a Transformation" | [llm-request-templates.md](llm-request-templates.md) → Transformation Templates |
+| **Manage built-in vars** | [llm-instructions.md](llm-instructions.md) → "Manage Built-in Variables" | [llm-request-templates.md](llm-request-templates.md) → Built-in Variable Templates |
 | **Understand hierarchy** | [llm-context.md](llm-context.md) | [quick-reference.md](quick-reference.md) → Entity Relationships |
 | **Look up tag types** | [quick-reference.md](quick-reference.md) → Tag Types | [llm-request-templates.md](llm-request-templates.md) |
+| **Look up transformation types** | [quick-reference.md](quick-reference.md) → Transformation Types | [schemas.md](schemas.md) → Transformations |
 | **Check OAuth scopes** | [llm-workflows.md](llm-workflows.md) → Determine Scopes | [api-reference.md](api-reference.md) |
 
 ---
@@ -187,7 +191,11 @@ Account
         ├── Tags
         ├── Triggers
         ├── Variables
-        └── Other entities
+        ├── Built-in Variables (enable/disable)
+        ├── Clients (server-side only)
+        ├── Transformations (server-side only)
+        ├── Templates
+        └── Folders
 ```
 
 ### Critical Rules
@@ -219,6 +227,10 @@ Account
 | Tags | Tracking code/pixels | ✅ |
 | Triggers | Firing conditions | ✅ |
 | Variables | Dynamic values | ✅ |
+| Built-in Variables | Pre-configured variables | ✅ (enable/disable) |
+| Clients | Server-side request handlers | ✅ (server only) |
+| Transformations | Server-side event data modifiers | ✅ (server only) |
+| Templates | Custom tag/variable definitions | ✅ |
 | Versions | Immutable snapshots | ❌ |
 | Environments | Deployment targets | Partially |
 
@@ -317,11 +329,27 @@ Information in this repository is synthesized from:
 
 ## Maintenance
 
-This repository reflects the GTM API as of **January 2026**.
+This repository reflects the GTM API as of **February 2026**.
 
 Google may update the API without notice. For the most current specification:
 - Check the official [Tag Manager API docs](https://developers.google.com/tag-platform/tag-manager/api/v2)
 - Fetch the latest discovery document: `https://tagmanager.googleapis.com/$discovery/rest?version=v2`
+
+---
+
+## Known Issues
+
+### Transformation types are undocumented
+Google's API documentation does not list valid transformation type values. Through testing, we discovered three types: `tf_allow_params`, `tf_exclude_params`, and `tf_augment_event`. Each uses different parameter table keys and column names. See [schemas.md](schemas.md#transformation-types) for details.
+
+### Google returns HTTP 500 for invalid transformation types
+Unlike most validation errors (which return 400), passing an unknown transformation type to the API returns HTTP 500 Internal Server Error. This makes debugging transformation type issues harder.
+
+### `autoEventFilter` silently dropped by API
+When creating or updating `linkClick`, `click`, or `formSubmission` triggers, the `autoEventFilter` field is silently dropped. The API returns 200 OK but does not persist the field. The `filter` and `customEventFilter` fields work correctly. **Workaround:** Set `autoEventFilter` conditions manually via the GTM web interface.
+
+### List operations return nil for incompatible container types
+Calling list endpoints for server-side resources (clients, transformations) on a web container may return a nil/empty response rather than an error. Your code should handle nil responses gracefully.
 
 ---
 

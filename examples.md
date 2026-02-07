@@ -834,6 +834,80 @@ Content-Type: application/json
 
 ---
 
+## Example 10: Server-Side Container — Create Transformation
+
+### Scenario
+Create a transformation that excludes specific parameters from server-side tags.
+
+### Step 1: List Transformations
+
+**Request:**
+```http
+GET https://tagmanager.googleapis.com/tagmanager/v2/accounts/6313905896/containers/242965896/workspaces/2/transformations
+Authorization: Bearer {access_token}
+```
+
+**Response:**
+```json
+{
+  "transformation": []
+}
+```
+
+**Note:** If the container is a web container (not server-side), this may return an empty/null response instead of an error.
+
+### Step 2: Create Exclude Parameters Transformation
+
+**Request:**
+```http
+POST https://tagmanager.googleapis.com/tagmanager/v2/accounts/6313905896/containers/242965896/workspaces/2/transformations
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "name": "Exclude Facebook Cookies",
+  "type": "tf_exclude_params",
+  "parameter": [
+    {
+      "key": "excludedParamsTable",
+      "type": "list",
+      "list": [
+        {
+          "type": "map",
+          "map": [
+            {"key": "excludedParams", "type": "template", "value": "x-fb-ck-fbp"}
+          ]
+        }
+      ]
+    },
+    {"key": "matchingConditionsEnabled", "type": "boolean", "value": "false"},
+    {"key": "allTagsExcept", "type": "boolean", "value": "false"},
+    {"key": "affectedTags", "type": "list"},
+    {"key": "affectedTagTypes", "type": "list"}
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "path": "accounts/6313905896/containers/242965896/workspaces/2/transformations/3",
+  "transformationId": "3",
+  "name": "Exclude Facebook Cookies",
+  "type": "tf_exclude_params",
+  "fingerprint": "1234567890"
+}
+```
+
+### Key Learnings
+
+1. **Transformation types are not documented** by Google — the three known types (`tf_allow_params`, `tf_exclude_params`, `tf_augment_event`) were discovered through testing
+2. **Each type uses different parameter table keys and column names** — using wrong names silently fails
+3. **Google returns HTTP 500 for invalid types** — unlike most validation errors which return 400
+4. **List operations on web containers return empty** — not an error, just empty/null response
+
+---
+
 ## Tips for LLMs
 
 1. **Always get fingerprints** before updating entities

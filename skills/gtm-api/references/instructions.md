@@ -594,6 +594,162 @@ OUTPUT:
 
 ---
 
+## Instruction: Manage Built-in Variables
+
+```
+TASK: Enable or disable built-in variables in a workspace
+
+INPUTS:
+  - account_id: string
+  - container_id: string
+  - workspace_id: string
+  - types: array of strings (built-in variable type names)
+  - action: "enable" | "disable"
+
+ALGORITHM:
+
+STEP 1: Validate inputs
+  IF types is empty OR length == 0:
+    RETURN error "At least one variable type is required"
+
+  IF action not in ["enable", "disable"]:
+    RETURN error "Action must be 'enable' or 'disable'"
+
+STEP 2: Get workspace
+  workspace_path = build_path("workspace", {account_id, container_id, workspace_id})
+
+STEP 3: Execute action
+  IF action == "enable":
+    response = POST {workspace_path}/built_in_variables?type={types[0]}&type={types[1]}...
+    // Types are passed as repeated query parameters, not in request body
+
+  IF action == "disable":
+    // Requires the full path of the built-in variable
+    response = DELETE {workspace_path}/built_in_variables?type={types[0]}&type={types[1]}...
+
+STEP 4: Handle response
+  IF response.status_code == 200:
+    RETURN success with enabled/disabled types
+  ELSE:
+    RETURN error with response details
+
+IMPORTANT:
+  - Types are passed as URL query parameters via ?type=X&type=Y, NOT in the request body
+  - Common web types: pageUrl, pageHostname, pagePath, referrer, clickElement, etc.
+  - Common server types: eventName, clientName, requestPath, requestMethod, requestHost
+  - Works on both web and server containers
+```
+
+---
+
+## Instruction: Create a Client (Server-Side)
+
+```
+TASK: Create a client in a server-side GTM container
+
+INPUTS:
+  - account_id: string
+  - container_id: string
+  - workspace_id: string
+  - client_config: object with {name, type, parameters, priority, notes}
+
+ALGORITHM:
+
+STEP 1: Validate inputs
+  IF client_config.name is empty:
+    RETURN error "Client name is required"
+  IF client_config.type is empty:
+    RETURN error "Client type is required"
+
+STEP 2: Verify container is server-side
+  container = GET /accounts/{account_id}/containers/{container_id}
+  IF container.usageContext[0] != "server":
+    RETURN error "Clients are only supported in server-side containers"
+
+STEP 3: Build request body
+  client_body = {
+    "name": client_config.name,
+    "type": client_config.type
+  }
+  IF client_config.parameters: client_body["parameter"] = client_config.parameters
+  IF client_config.priority: client_body["priority"] = client_config.priority
+  IF client_config.notes: client_body["notes"] = client_config.notes
+
+STEP 4: Create client
+  response = POST {workspace_path}/clients
+  IF response.status_code == 200 OR 201:
+    RETURN success with client ID
+  ELSE:
+    Handle error per standard error recovery
+
+MUST NOT INCLUDE:
+  ✗ clientId (auto-generated)
+  ✗ path (auto-generated)
+  ✗ fingerprint (only for updates)
+```
+
+---
+
+## Instruction: Create a Transformation (Server-Side)
+
+```
+TASK: Create a transformation in a server-side GTM container
+
+INPUTS:
+  - account_id: string
+  - container_id: string
+  - workspace_id: string
+  - transformation_config: object with {name, type, parameters, notes}
+
+ALGORITHM:
+
+STEP 1: Validate inputs
+  IF transformation_config.name is empty:
+    RETURN error "Transformation name is required"
+  IF transformation_config.type not in ["tf_allow_params", "tf_exclude_params", "tf_augment_event"]:
+    RETURN error "Type must be one of: tf_allow_params, tf_exclude_params, tf_augment_event"
+
+STEP 2: Verify container is server-side
+  container = GET /accounts/{account_id}/containers/{container_id}
+  IF container.usageContext[0] != "server":
+    RETURN error "Transformations are only supported in server-side containers"
+
+STEP 3: Build request body
+  transformation_body = {
+    "name": transformation_config.name,
+    "type": transformation_config.type
+  }
+  IF transformation_config.parameters:
+    transformation_body["parameter"] = transformation_config.parameters
+  IF transformation_config.notes:
+    transformation_body["notes"] = transformation_config.notes
+
+STEP 4: Create transformation
+  response = POST {workspace_path}/transformations
+  IF response.status_code == 200 OR 201:
+    RETURN success with transformation ID
+  ELSE IF response.status_code == 500:
+    // Google returns 500 (not 400) for invalid transformation types
+    RETURN error "Invalid transformation type or server error"
+  ELSE:
+    Handle error per standard error recovery
+
+IMPORTANT:
+  - Transformation types are undocumented in official Google API docs
+  - Google API returns HTTP 500 (not 400) for unknown transformation types
+  - Each type uses different table key and column names in parameters:
+    * tf_allow_params → allowedParamsTable with column "allowedParams"
+    * tf_exclude_params → excludedParamsTable with column "excludedParams"
+    * tf_augment_event → augmentEventTable with columns "paramName" and "paramValue"
+
+MUST NOT INCLUDE:
+  ✗ transformationId (auto-generated)
+  ✗ path (auto-generated)
+  ✗ fingerprint (only for updates)
+```
+
+---
+
 ## Common Task Instruction Sets
 
 ### Create GA4 Page View Tag

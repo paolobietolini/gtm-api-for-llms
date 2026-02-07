@@ -186,6 +186,38 @@ Scopes are **additive**. You need multiple scopes for complex operations:
 
 ---
 
+## Transformation Types Reference (Server-Side Only)
+
+| Type Code | Display Name | Purpose | Table Key | Column(s) |
+|-----------|-------------|---------|-----------|-----------|
+| `tf_allow_params` | Allow Parameters | Only allow specified params | `allowedParamsTable` | `allowedParams` |
+| `tf_exclude_params` | Exclude Parameters | Remove specified params | `excludedParamsTable` | `excludedParams` |
+| `tf_augment_event` | Augment Event | Add/modify event params | `augmentEventTable` | `paramName`, `paramValue` |
+
+**Important:** These types are undocumented in official Google API docs. Google returns HTTP 500 (not 400) for unknown types.
+
+### Common Transformation Parameters (All Types)
+
+| Parameter Key | Type | Description |
+|---------------|------|-------------|
+| `matchingConditionsEnabled` | boolean | Whether conditions must match |
+| `allTagsExcept` | boolean | Apply to all tags except listed |
+| `affectedTags` | list | Specific tags to target |
+| `affectedTagTypes` | list | Tag types to target |
+| `matchingConditionsTable` | list | Matching conditions |
+
+## Client Types Reference (Server-Side Only)
+
+| Type Code | Display Name | Description |
+|-----------|-------------|-------------|
+| `gaaw` | GA4 Web Client | Receives GA4 web measurement data |
+| `gaaw_client` | GA4 Client | GA4 client (template-based) |
+| `sp` | Google Ads Client | Receives Google Ads data |
+
+**Note:** Client types are template-based strings, not a fixed enum. The `type` field references the template used.
+
+---
+
 ## Built-in Variables by Container Type
 
 ### Web Container
